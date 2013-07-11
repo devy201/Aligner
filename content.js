@@ -8,7 +8,6 @@ function Image(options){
         imageTag = imageObject.getElementsByTagName('img'),
         visible = document.createAttribute('class'),
         style = document.createAttribute('style'),
-        //xCoord = 0, yCoord = 0, opacity = 0.5,
         id = "thumb-img";
 
     var settings = {
@@ -33,6 +32,8 @@ function Image(options){
     };
 
     this.setImageSrc = function(source){
+        style.nodeValue = 'left:'+settings.xCoord+'px; top:'+settings.yCoord+'px; opacity:'+settings.opacity+';';
+        imageObject.setAttributeNode(style);
         imageTag[0].setAttribute('src', source)
     };
 
@@ -62,11 +63,17 @@ function Image(options){
         imageObject.setAttributeNode(style);
     };
 
-    this.saveSettings = function(){
-        sessionStorage.setItem('wpSettings', JSON.stringify(settings));
-    };
+    this.setScale = function(value){
+        var width = imageTag[0].offsetWidth;
+        var height = imageTag[0].offsetHeight;
+        console.log(width + '\n'+ height);
+        imageTag[0].style.width = width * value + 'px';
+        imageTag[0].style.height = height * value + 'px';
+    }
 
-    console.log(settings);
+    this.getSettings = function(){
+        return settings;
+    };
 }
 /*Modal window object*/
 function WpWindow(){
@@ -98,16 +105,34 @@ function WpWindow(){
         '</main>';
     var contVisibility = document.createAttribute('class');
     var flag = true;
+    var image;
+    var that = this;
+
+
+    this.saveSettings = function(){
+        //if function return Image Object
+        if(!this.getImageObject() === false){
+            sessionStorage.setItem('wpSettings', JSON.stringify(this.getImageObject().getSettings()));
+        }
+    };
+
+    this.loadSettings = function(){
+        return JSON.parse(sessionStorage.getItem('wpSettings'));
+    };
 
     this.deleteWindow = function(){
         var el = $('wp-window');
         var image = $('thumb-img');
+
+        this.saveSettings();
         if(el){
             el.parentNode.removeChild(el);
         }
         if(image){
             image.parentNode.removeChild(image);
         }
+        image = null;
+        that = null;
     };
 
     this.addWindow = function(){
@@ -116,6 +141,7 @@ function WpWindow(){
             this.deleteWindow();
         }
         var el = document.createElement('div');
+        image = new Image(this.loadSettings());
         el.setAttribute("id", "wp-window");
         el.setAttribute("style", "top: 10px; left: 10px;")
         el.innerHTML = popup_window_template;
@@ -139,7 +165,7 @@ function WpWindow(){
             flag = true;
         }
         content.setAttributeNode(contVisibility);
-    }
+    };
 
     this.uploadImage = function(event){
         var files = event.target.files; // FileList Object
@@ -173,23 +199,28 @@ function WpWindow(){
         }
     };
 
-    this.loadSettings = function(){
-        return JSON.parse(sessionStorage.getItem('wpSettings'));
-    }
+    this.getImageObject = function(){
+        if(image){
+            return image;
+        }
+        else{
+            return false;
+        }
+    };
 
     this.addWindow();
 }
 
 var _window = new WpWindow();
-var image = new Image(_window.loadSettings());
+//var image = new Image(_window.loadSettings());
 
 
 function visibilityHandler(){
-    if(image.getVisibility() == 'visible'){
-        image.setVisibility(false);
+    if(_window.getImageObject().getVisibility() == 'visible'){
+        _window.getImageObject().setVisibility(false);
     }
     else{
-        image.setVisibility(true);
+        _window.getImageObject().setVisibility(true);
     }
     if(this.innerHTML === "Show") this.innerHTML = 'Hide';
     else this.innerHTML = "Show";
@@ -245,7 +276,7 @@ $('add-img').addEventListener('change', function(event){
 $('x-coord').addEventListener('change', function(){
     var xValue = this.value;
     if(xValue){
-        image.move(xValue, 'x');
+        _window.getImageObject().move(xValue, 'x');
     }
 }, false);
 $('change-visibility').addEventListener('click', visibilityHandler, false);
@@ -257,11 +288,11 @@ $('change-visibility').addEventListener('touchstart', function(e){
 $('y-coord').addEventListener('change', function(){
     var yValue = this.value;
     if(yValue){
-        image.move(yValue, 'y');
+        _window.getImageObject().move(yValue, 'y');
     }
 }, false);
 $('opacity').addEventListener('change', function(){
-    image.setOpacity(this.value/100);
+    _window.getImageObject().setOpacity(this.value/100);
 }, false);
 
 $('wp-header').addEventListener('mousedown', tzdragg.startMoving, false);
@@ -275,13 +306,13 @@ $('minimize').addEventListener('touchstart', function(e){
     return false;
 }, false);
 $('close').addEventListener('click', function(){
-    image.saveSettings();
     _window.deleteWindow();
-    _window = null;
-    image = null;
 }, false);
 $('close').addEventListener('touchstart', function(e){
     e.preventDefault();
     this.click();
     return false;
 }, false);
+$('scale').addEventListener('change', function(){
+    _window.getImageObject().setScale(this.value);
+});
