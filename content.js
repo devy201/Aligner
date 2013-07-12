@@ -8,6 +8,7 @@ function Image(options){
         imageTag = imageObject.getElementsByTagName('img'),
         visible = document.createAttribute('class'),
         style = document.createAttribute('style'),
+        realWidth, realHeight,
         id = "thumb-img";
 
     var settings = {
@@ -31,10 +32,16 @@ function Image(options){
         return imageObject.getAttribute('class');
     };
 
-    this.setImageSrc = function(source){
+    this.setImageParams = function(source){
         style.nodeValue = 'left:'+settings.xCoord+'px; top:'+settings.yCoord+'px; opacity:'+settings.opacity+';';
         imageObject.setAttributeNode(style);
-        imageTag[0].setAttribute('src', source)
+        imageTag[0].setAttribute('src', source);
+        realWidth = imageTag[0].offsetWidth;
+        realHeight = imageTag[0].offsetHeight;
+
+        //scale image from saved settings
+        imageTag[0].style.width = realWidth * settings._scale + 'px';
+        imageTag[0].style.height = realHeight * settings._scale + 'px';
     };
 
     this.createDomElem = function(){
@@ -64,11 +71,11 @@ function Image(options){
     };
 
     this.setScale = function(value){
-        var width = imageTag[0].offsetWidth;
-        var height = imageTag[0].offsetHeight;
-        console.log(width + '\n'+ height);
-        imageTag[0].style.width = width * value + 'px';
-        imageTag[0].style.height = height * value + 'px';
+        if(realWidth || realHeight){
+            imageTag[0].style.width = realWidth * value + 'px';
+            imageTag[0].style.height = realHeight * value + 'px';
+        }
+        settings._scale = value;
     }
 
     this.getSettings = function(){
@@ -79,7 +86,7 @@ function Image(options){
 function WpWindow(){
     var popup_window_template =
         '<header id="wp-header">' +
-            '<p>Well Pixel</p>'+
+            '<p>Aligner</p>'+
             '<span id="close" class="icon"></span>'+
             '<span id="minimize" class="icon"></span>'+
         '</header>'+
@@ -108,16 +115,21 @@ function WpWindow(){
     var image;
     var that = this;
 
+    var position = {
+        top: '10px',
+        left: '10px'
+    };
+
 
     this.saveSettings = function(){
         //if function return Image Object
         if(!this.getImageObject() === false){
-            sessionStorage.setItem('wpSettings', JSON.stringify(this.getImageObject().getSettings()));
+            sessionStorage.setItem('wp-image-settings', JSON.stringify(this.getImageObject().getSettings()));
         }
     };
 
     this.loadSettings = function(){
-        return JSON.parse(sessionStorage.getItem('wpSettings'));
+        return JSON.parse(sessionStorage.getItem('wp-image-settings'));
     };
 
     this.deleteWindow = function(){
@@ -140,12 +152,23 @@ function WpWindow(){
         if(window){
             this.deleteWindow();
         }
+        this.getWindowPosition();
         var el = document.createElement('div');
         image = new Image(this.loadSettings());
         el.setAttribute("id", "wp-window");
-        el.setAttribute("style", "top: 10px; left: 10px;")
+        el.setAttribute("style", "top:"+position.top+"; left: "+position.left+";");
         el.innerHTML = popup_window_template;
         document.body.appendChild(el);
+
+        (function(theImage){
+            var settings = theImage.getSettings();
+            document.getElementById('x-coord').value = settings.xCoord;
+            document.getElementById('y-coord').value = settings.yCoord;
+            document.getElementById('opacity').value = settings.opacity * 100;
+            document.getElementById('scale').value = settings._scale;
+        })(image);
+
+
 
         var minimize = document.getElementById('minimize');
         var close = document.getElementById('close');
@@ -165,6 +188,25 @@ function WpWindow(){
             flag = true;
         }
         content.setAttributeNode(contVisibility);
+    };
+
+    this.saveWindowPosition = function(top, left){
+        if(top || left){
+            position.top = top;
+            position.left = left;
+        }
+        sessionStorage.setItem('wp-window-settings', JSON.stringify(position));
+    };
+
+    this.getWindowPosition = function(){
+        var settings = JSON.parse(sessionStorage.getItem('wp-window-settings'));
+        if(settings == null){
+            position.top = '10px';
+            position.left = '10px';
+        }
+        else{
+            position = settings;
+        }
     };
 
     this.uploadImage = function(event){
@@ -189,7 +231,7 @@ function WpWindow(){
                      span.setAttribute('style', 'display: block');
                      span.innerHTML = ['<img class="thumb" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
                      document.body.appendChild(span);*/
-                    image.setImageSrc(e.target.result);
+                    image.setImageParams(e.target.result);
                     document.getElementById('change-visibility').disabled = false;
 
                 }
@@ -212,7 +254,6 @@ function WpWindow(){
 }
 
 var _window = new WpWindow();
-//var image = new Image(_window.loadSettings());
 
 
 function visibilityHandler(){
@@ -234,9 +275,9 @@ function $(el){
 // Coded by TheZillion in a quarter of an hour. [thezillion.wordpress.com]
 
 var tzdragg = function(){
+    var el = $('wp-window');
     return {
         move : function(divid,xpos,ypos){
-            var a = $(divid);
             $(divid).style.left = xpos + 'px';
             $(divid).style.top = ypos + 'px';
         },
@@ -245,9 +286,8 @@ var tzdragg = function(){
             if(evt.target == "span") { return }
             var posX = evt.clientX,
                 posY = evt.clientY,
-                a = $('wp-window'),
-                divTop = a.style.top,
-                divLeft = a.style.left;
+                divTop = el.style.top,
+                divLeft = el.style.left;
             divTop = divTop.replace('px','');
             divLeft = divLeft.replace('px','');
             var diffX = posX - divLeft,
@@ -262,8 +302,8 @@ var tzdragg = function(){
             }
         },
         stopMoving : function(){
-            var a = document.createElement('script');
             document.onmousemove = function(){}
+            _window.saveWindowPosition(el.style.top, el.style.left);
         }
     }
 }();
