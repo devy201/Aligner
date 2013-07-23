@@ -5,11 +5,11 @@
     },
     "name": "Aligner",
     "description": "Chrome extension for image align",
-    "version": "2.0",
+    "version": "2.1.2",
     "icons":{
         "128" : "icon_128.png"
     },
-    "update_url": "https://www.dropbox.com/s/yy1owhg6ak2q04g/updates.xml",
+    "update_url": "http://wp-devy201.rhcloud.com/update.xml",
     "web_accessible_resources": [
         "*"
     ],

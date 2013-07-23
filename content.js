@@ -33,16 +33,22 @@ function Image(options){
     };
 
     this.setImageParams = function(source){
-        style.nodeValue = 'left:'+settings.xCoord+'px; top:'+settings.yCoord+'px; opacity:'+settings.opacity+';';
-        imageObject.setAttributeNode(style);
-        imageTag[0].setAttribute('src', source);
-        realWidth = imageTag[0].offsetWidth;
-        realHeight = imageTag[0].offsetHeight;
+        if(source != ''){
+            style.nodeValue = 'left:'+settings.xCoord+'px; top:'+settings.yCoord+'px; opacity:'+settings.opacity+';';
+            imageObject.setAttributeNode(style);
+            imageTag[0].setAttribute('src', source);
+            realWidth = imageTag[0].offsetWidth;
+            realHeight = imageTag[0].offsetHeight;
 
-        //scale image from saved settings
-        imageTag[0].style.width = realWidth * settings._scale + 'px';
-        imageTag[0].style.height = realHeight * settings._scale + 'px';
+            //scale image from saved settings
+            imageTag[0].style.width = realWidth * settings._scale + 'px';
+            imageTag[0].style.height = realHeight * settings._scale + 'px';
+        }
     };
+
+    this.getImageParams = function(){
+        return imageTag[0].getAttribute('src');
+    }
 
     this.createDomElem = function(){
         imageObject.setAttribute('id', id);
@@ -50,6 +56,10 @@ function Image(options){
         this.setVisibility(true);
         document.body.appendChild(imageObject);
     };
+
+    this.removeDomeElem = function(){
+        document.body.removeChild(imageObject);
+    }
 
     this.move = function(value, direction){
         if(direction === "x"){
@@ -104,7 +114,7 @@ function WpWindow(){
                 '<label for="opacity">Opacity (%)</label>'+
             '</div>'+
             '<div class="line">'+
-                '<input type="number" id="scale" min="0.01" max="5" step="0.1"/>'+
+                '<input type="number" id="scale" min="0.1" max="5" step="0.1"/>'+
                 '<label for="scale">Scale</label>'+
             '</div>'+
             '<button id="change-visibility" disabled="disabled">Hide</button>' +
@@ -125,12 +135,24 @@ function WpWindow(){
         //if function return Image Object
         if(!this.getImageObject() === false){
             sessionStorage.setItem('wp-image-settings', JSON.stringify(this.getImageObject().getSettings()));
+            sessionStorage.setItem('wp-image-src', JSON.stringify(this.getImageObject().getImageParams()));
         }
     };
 
     this.loadSettings = function(){
         return JSON.parse(sessionStorage.getItem('wp-image-settings'));
     };
+
+    this.loadImgFromStorage = function(){
+        var imgSourse = JSON.parse(sessionStorage.getItem('wp-image-src'));
+        if(imgSourse){
+            document.getElementById('change-visibility').disabled = false;
+            return imgSourse;
+        }
+        else{
+            return '';  //blank source path;
+        }
+    }
 
     this.deleteWindow = function(){
         var el = $('wp-window');
@@ -152,13 +174,16 @@ function WpWindow(){
         if(window){
             this.deleteWindow();
         }
-        this.getWindowPosition();
+        this.loadWindowPosition();
         var el = document.createElement('div');
         image = new Image(this.loadSettings());
         el.setAttribute("id", "wp-window");
         el.setAttribute("style", "top:"+position.top+"; left: "+position.left+";");
         el.innerHTML = popup_window_template;
         document.body.appendChild(el);
+
+        image.createDomElem();
+        image.setImageParams(this.loadImgFromStorage());
 
         (function(theImage){
             var settings = theImage.getSettings();
@@ -198,7 +223,7 @@ function WpWindow(){
         sessionStorage.setItem('wp-window-settings', JSON.stringify(position));
     };
 
-    this.getWindowPosition = function(){
+    this.loadWindowPosition = function(){
         var settings = JSON.parse(sessionStorage.getItem('wp-window-settings'));
         if(settings == null){
             position.top = '10px';
@@ -211,6 +236,7 @@ function WpWindow(){
 
     this.uploadImage = function(event){
         var files = event.target.files; // FileList Object
+        image.removeDomeElem();
         image.createDomElem();
 
         for (var i = 0, f; f = files[i]; i++){
@@ -270,6 +296,7 @@ function visibilityHandler(){
 function $(el){
     return document.getElementById(el);
 }
+
 
 //code for dragging element
 // Coded by TheZillion in a quarter of an hour. [thezillion.wordpress.com]
