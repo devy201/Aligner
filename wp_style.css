@@ -1,40 +1,94 @@
-#wp-window{
+#wp-window, #wp-window:hover, #wp-window:focus, #wp-window:active{
     position: absolute;
     top: 0;
     left: 0;
     width: 280px;
-    background-color: #f4f4f4;
-    z-index: 1000;
+    min-width: 280px;
+    max-width: 280px;
+    min-height: 245px;
+    max-height: 245px;
+    background: #f4f4f4;
+    z-index: 100000;
     border-radius: 4px;
     border: 1px solid #000;
     font-family: Helvetica, Arial, sans-serif;
+    color: rgb(34, 34, 34);
+    display: block;
+    font-size: 16px;
+    line-height: 22px;
+    padding: 0;
+    margin: 0;
+}
+#wp-window:after, #wp-window:before{
+    content: "";
+}
+#wp-window.minimized{
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
 }
 
 /******* HEADER ********/
-#wp-window #wp-header{
-    width: 100%;
+#wp-window #wp-header,
+#wp-header:hover,
+#wp-header:focus,
+#wp-header:active{
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
     height: 20px;
-    background-color: #d9d9d9;
+    min-height: 20px;
+    max-height: 20px;
+    background: #d9d9d9;
+    border: none;
     padding: 8px 0;
+    margin: 0;
     -webkit-user-select: none;
     cursor: default;
     border-radius: 4px 4px 0 0;
     position: static;
+    display: block;
+    color: rgb(34,34,34);
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    left: 0;
+    top: 0;
+    line-height: 22px;
+}
+#wp-header:before, #wp-header:after{
+    content: "";
+}
+#wp-window.minimized #wp-header{
+    border-radius: 4px;
 }
 #wp-window #wp-header p{
     margin: 0 0 0 103px;
+    padding: 0;
     font-size: 14px;
     font-weight: bold;
     font-family: Helvetica, Arial, sans-serif;
     display: inline-block;
+    color: rgb(34,34,34);
+    cursor: default;
+    font-weight: bold;
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    height: 19px;
+    min-height: 19px;
+    max-height: 19px;
 }
 #wp-window .icon{
     width: 10px;
+    min-width: 10px;
+    max-width: 10px;
     height: 10px;
-    display: inline-block;
+    min-height: 10px;
+    max-height: 10px;
     background-repeat: no-repeat;
     float: right;
-    margin-right: 10px;
+    margin: 0 10px 0 0;
+    padding: 0;
     cursor: pointer;
 }
 #wp-window #close{
@@ -47,25 +101,71 @@
 
 /******** MAIN *******/
 #wp-window #wp-content{
-    /*height: 172px;*/
+    width: 266px;
+    min-width: 266px;
+    max-width: 266px;
+    height: 195px;
+    min-height: 195px;
+    max-height: 195px;
     padding: 7px;
+    margin: 0;
+    color: rgb(34,34,34);
+    display: block;
+    line-height: 22px;
 }
-#wp-window #wp-content.minimized{
+#wp-window.minimized #wp-content{
     display: none;
 }
 #wp-window #wp-content .line, #wp-window button, #wp-window input[type="file"]{
+    color: rgb(34,34,34);
+    display: block;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    width: 266px;
+    min-width: 266px;
+    max-width: 266px;
+    height: 25px;
+    min-height: 25px;
+    max-height: 25px;
+    line-height: 22px;
     margin: 5px 0;
+    padding: 0;
+}
+#wp-window button{
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
 }
 #wp-window #wp-content input[type="number"]{
+    background: #fff;
+    border: 2px solid rgb(238,238,238);
+    border-radius: 0;
+    display: inline-block;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
     width: 120px;
-    margin-right: 10px;
+    min-width: 120px;
+    max-width: 120px;
+    height: 19px;
+    min-height: 19px;
+    max-height: 19px;
+    letter-spacing: normal;
+    line-height: 22px;
+    margin: 0 10px 0 0;
+    padding: 1px 2px 1px 0;
 }
 #wp-window label{
     font-size: 13px;
+    color: rgb(34,34,34);
+    font-family: Helvetica, Arial, sans-serif;
+    width: auto;
+    height: auto;
+    line-height: 22px;
 }
 
 /******* IMAGE *******/
 #thumb-img{
+    display: block;
     position: absolute;
     width: auto;
     height: auto;
@@ -82,4 +182,8 @@
 }
 #thumb-img img{
     padding: 0;
+    margin: 0;
+    border: none;
+    outline: 0;
+    border-radius: 0;
 }

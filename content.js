@@ -86,7 +86,7 @@ function Image(options){
             imageTag[0].style.height = realHeight * value + 'px';
         }
         settings._scale = value;
-    }
+    };
 
     this.getSettings = function(){
         return settings;
@@ -159,7 +159,7 @@ function WpWindow(){
         else{
             return '';  //blank source path;
         }
-    }
+    };
 
     this.deleteWindow = function(){
         var el = $('wp-window');
@@ -210,7 +210,7 @@ function WpWindow(){
     };
 
     this.minimizeWindow = function(){
-        var content = $('wp-content');
+        var content = $('wp-window');
         if(flag){
             contVisibility.nodeValue = 'minimized';
             flag = false;
@@ -256,7 +256,7 @@ function WpWindow(){
             var reader = new FileReader();
 
             //closure to capture file information
-            reader.onload = (function(theFile){
+            reader.onload = (function(){
                 return function(e){
                     //render image
                     /*var span = document.createElement('span');
@@ -273,7 +273,7 @@ function WpWindow(){
                         callback();
                     }
                 }
-            })(f);
+            })();
 
             reader.readAsDataURL(f);
         }
@@ -341,7 +341,7 @@ var tzdragg = function(){
             }
         },
         stopMoving : function(){
-            document.onmousemove = function(){}
+            document.onmousemove = function(){};
             _window.saveWindowPosition(el.style.top, el.style.left);
         }
     }
