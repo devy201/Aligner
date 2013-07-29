@@ -381,9 +381,7 @@ $('opacity').addEventListener('change', function(){
 }, false);
 
 $('wp-header').addEventListener('mousedown', tzdragg.startMoving, false);
-$('wp-header').addEventListener('touchstart', tzdragg.startMoving, false);
 $('wp-header').addEventListener('mouseup', tzdragg.stopMoving, false);
-$('wp-header').addEventListener('touchend', tzdragg.stopMoving, false);
 $('minimize').addEventListener('click', _window.minimizeWindow, false);
 $('minimize').addEventListener('touchstart', function(e){
     e.preventDefault();
