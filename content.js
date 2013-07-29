@@ -48,7 +48,7 @@ function Image(options){
 
     this.getImageParams = function(){
         return imageTag[0].getAttribute('src');
-    }
+    };
 
     this.createDomElem = function(){
         imageObject.setAttribute('id', id);
@@ -59,7 +59,7 @@ function Image(options){
 
     this.removeDomeElem = function(){
         document.body.removeChild(imageObject);
-    }
+    };
 
     this.move = function(value, direction){
         if(direction === "x"){
@@ -124,27 +124,34 @@ function WpWindow(){
     var flag = true;
     var image;
     var that = this;
+    var key = getURL();     //keyname for local storage. generated from url
 
     var position = {
         top: '10px',
         left: '10px'
     };
 
+    function getURL(){
+        var currentURL = document.createElement('a');
+        currentURL.href = document.URL;
+        return currentURL.pathname;
+    }
+
 
     this.saveSettings = function(){
         //if function return Image Object
         if(!this.getImageObject() === false){
-            sessionStorage.setItem('wp-image-settings', JSON.stringify(this.getImageObject().getSettings()));
-            sessionStorage.setItem('wp-image-src', JSON.stringify(this.getImageObject().getImageParams()));
+            localStorage.setItem(key+'wp-image-settings', JSON.stringify(this.getImageObject().getSettings()));
+            localStorage.setItem(key+'wp-image-src', JSON.stringify(this.getImageObject().getImageParams()));
         }
     };
 
     this.loadSettings = function(){
-        return JSON.parse(sessionStorage.getItem('wp-image-settings'));
+        return JSON.parse(localStorage.getItem(key+'wp-image-settings'));
     };
 
     this.loadImgFromStorage = function(){
-        var imgSourse = JSON.parse(sessionStorage.getItem('wp-image-src'));
+        var imgSourse = JSON.parse(localStorage.getItem(key+'wp-image-src'));
         if(imgSourse){
             document.getElementById('change-visibility').disabled = false;
             return imgSourse;
@@ -220,11 +227,11 @@ function WpWindow(){
             position.top = top;
             position.left = left;
         }
-        sessionStorage.setItem('wp-window-settings', JSON.stringify(position));
+        localStorage.setItem(key+'wp-window-settings', JSON.stringify(position));
     };
 
     this.loadWindowPosition = function(){
-        var settings = JSON.parse(sessionStorage.getItem('wp-window-settings'));
+        var settings = JSON.parse(localStorage.getItem(key+'wp-window-settings'));
         if(settings == null){
             position.top = '10px';
             position.left = '10px';
@@ -234,7 +241,7 @@ function WpWindow(){
         }
     };
 
-    this.uploadImage = function(event){
+    this.uploadImage = function(event, callback){
         var files = event.target.files; // FileList Object
         image.removeDomeElem();
         image.createDomElem();
@@ -260,6 +267,11 @@ function WpWindow(){
                     image.setImageParams(e.target.result);
                     document.getElementById('change-visibility').disabled = false;
 
+                    //file reader is asynchronous function
+                    //it needs callback in some way
+                    if(callback){
+                        callback();
+                    }
                 }
             })(f);
 
@@ -338,12 +350,16 @@ var tzdragg = function(){
 
 //handlers for inputs and buttons
 $('add-img').addEventListener('change', function(event){
-    _window.uploadImage(event);
+    _window.uploadImage(event, function(){
+        _window.saveSettings();
+    });
+
 }, false);
 $('x-coord').addEventListener('change', function(){
     var xValue = this.value;
     if(xValue){
         _window.getImageObject().move(xValue, 'x');
+        _window.saveSettings();
     }
 }, false);
 $('change-visibility').addEventListener('click', visibilityHandler, false);
@@ -356,10 +372,12 @@ $('y-coord').addEventListener('change', function(){
     var yValue = this.value;
     if(yValue){
         _window.getImageObject().move(yValue, 'y');
+        _window.saveSettings();
     }
 }, false);
 $('opacity').addEventListener('change', function(){
     _window.getImageObject().setOpacity(this.value/100);
+    _window.saveSettings();
 }, false);
 
 $('wp-header').addEventListener('mousedown', tzdragg.startMoving, false);
@@ -382,4 +400,5 @@ $('close').addEventListener('touchstart', function(e){
 }, false);
 $('scale').addEventListener('change', function(){
     _window.getImageObject().setScale(this.value);
+    _window.saveSettings();
 });
